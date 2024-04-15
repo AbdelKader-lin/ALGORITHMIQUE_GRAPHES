@@ -40,6 +40,14 @@ typedef struct a {
 
 typedef psommet_t pgraphe_t ;
 
+
+// On defini un type chemin : une liste chainée de sommets 
+typedef struct chemin {
+    psommet_t sommet_courrant ;
+    psommet_t sommet_suivant ;
+} chemin_t , *pchemin_t ;
+
+
 psommet_t chercher_sommet (pgraphe_t g, int label) ;
 
 void ajouter_arc (psommet_t o, psommet_t d, int distance) ;
@@ -64,4 +72,4 @@ void afficher_graphe_largeur (pgraphe_t g, int r) ;
 
 void algo_dijkstra (pgraphe_t g, int r) ;
 
-int elementaire ( pgraphe_t g , chemin_t c ) ;
+int elementaire ( pgraphe_t g , pchemin_t c ) ;

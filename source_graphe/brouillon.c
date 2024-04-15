@@ -69,21 +69,6 @@ Fin
 
 */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // internet
 int dijkstra(pgraphe_t g, int r) {
     psommet_t u, v;
@@ -133,3 +118,35 @@ int dijkstra(pgraphe_t g, int r) {
 
     return 0; // Succès
 }
+
+
+
+
+/* PSEUDO-CODE PIR LA FCT elementaire : 
+
+
+Fonction elementaire(g: pgraphe_t, c: chemin_t) -> int
+    Début
+        Si c est NULL ou c.sommet_courrant est NULL
+            Retourner 1  // Un chemin vide ou avec un seul sommet est élémentaire
+
+        Initialiser un tableau visites de taille g.nombre_sommets à 0
+
+        Définir current comme pointeur sur c  // Commencer avec le premier élément du chemin
+        isElementary à 1  // Supposer que le chemin est élémentaire
+
+        Tant que current n'est pas NULL et current.sommet_courrant n'est pas NULL
+            index = current.sommet_courrant.label  // Utiliser le label du sommet comme index
+
+            Si visites[index] est 1
+                isElementary à 0  // Chemin non élémentaire, car sommet déjà visité
+                Sortir de la boucle
+
+            Mettre visites[index] à 1  // Marquer le sommet comme visité
+            current = current.sommet_suivant  // Passer au sommet suivant dans le chemin
+
+        Libérer le tableau visites
+        Retourner isElementary  // Retourner le statut du chemin (élémentaire ou non)
+
+    Fin
+*/

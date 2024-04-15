@@ -15,11 +15,8 @@
 
 #define Entier_max 2147483647 // 2^31 -1
 
-// On defini un type chemin : une liste chainée de sommets 
-typedef struct chemin {
-    psommet_t sommet_courrant ;
-    psommet_t sommet_suivant ;  
-} chemin_t;
+
+
 
 
 
@@ -433,8 +430,30 @@ void algo_dijkstra (pgraphe_t g, int r){
  * @return 1 si le chemin est élémentaire
  *         0 sinon
  */
-int elementaire ( pgraphe_t g , chemin_t c ){
+int elementaire ( pgraphe_t graphe , pchemin_t chemin ){
 
+  if ( chemin == NULL || chemin->sommet_courrant == NULL ){
+    // C'est un chemin vide, ou bien formé d'un seul somet
+    return 1 ; 
+  }
+
+  // On initialise le champs visite à 0 pour tout les sommets;
+  pchemin_t pos_courante_1 = chemin ;
+  while ( pos_courante_1 != NULL ){
+    pos_courante_1 ->sommet_courrant ->visite = 0  ;
+    pos_courante_1 = pos_courante_1->sommet_suivant ;
+  }
+
+  // On parcours les sommets du chemin
+  pchemin_t pos_courante = chemin ;
+  while ( pos_courante != NULL ){
+    if (  pos_courante->sommet_courrant->visite == 1 ){
+      return 0 ;
+    }
+    pos_courante ->sommet_courrant ->visite = 1  ;
+    pos_courante = pos_courante->sommet_suivant ;
+  }
+  return 1 ; // Le chemin est elementaire 
 }
 
 
