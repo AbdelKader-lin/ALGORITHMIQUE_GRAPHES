@@ -13,7 +13,14 @@
 #include "file.h"
 #include "pile.h"
 
-#define Entier_max 1000
+#define Entier_max 2147483647 // 2^31 -1
+
+// On defini un type chemin : une liste chainée de sommets 
+typedef struct chemin {
+    psommet_t sommet_courrant ;
+    psommet_t sommet_suivant ;  
+} chemin_t;
+
 
 
 psommet_t chercher_sommet (pgraphe_t g, int label)
@@ -348,10 +355,11 @@ void algo_dijkstra (pgraphe_t g, int r){
 
 
     // 2- Initialiser les distances et les visites pour tous les sommets
-
-    for (psommet_t sommet = g; sommet != NULL; sommet = sommet->sommet_suivant) {
-        sommet->distance = INT_MAX;
-        sommet->visite = 0;
+    psommet_t sommet_actuel = g ;
+    while ( sommet_actuel != NULL ){
+      sommet_actuel->distance = INT_MAX;
+      sommet_actuel->visite = 0;
+      sommet_actuel = sommet_actuel->sommet_suivant ; 
     }
 
     // 3- On trouve le sommet de départ du graphe
@@ -368,87 +376,68 @@ void algo_dijkstra (pgraphe_t g, int r){
     if ( sommet_depart == NULL ){
       printf(" SOMMET DE DÉPART NON TROUVÉ ! \n");
       return ;
-    } 
+    } else {
+      // distance du sommet de départ à lui meme tjrs = 0
+      sommet_depart->distance = 0 ; 
+    }
 
 
 
+    psommet_t courrant_sommet = sommet_depart ; 
 
+    // Boucle principale
+    while ( courrant_sommet != NULL ){
 
-
-
-}
-
-
-// ################################## FONCTIONS TESTS
-
-// ##################################################
-// ##################################################
-
-
-// Trouver le sommet avec la distance minimum, parmi ceux qui n'ont pas encore été visités
-psommet_t minDistanceSommet_test(pgraphe_t g) {
-    int min = INT_MAX;
-    psommet_t min_distance_sommet = NULL;
-
-    for (psommet_t sommet = g; sommet != NULL; sommet = sommet->sommet_suivant) {
-        if (sommet->visite == 0 && sommet->distance <= min) {
-            min = sommet->distance;
-            min_distance_sommet = sommet;
+      // On cherche le sommet visité avec la distance minimal du sommet
+      psommet_t sommet_dmin_nonvisite = NULL ; 
+      psommet_t c = courrant_sommet ; 
+      int dist_min =  INT_MAX ;
+      while ( c != NULL ){
+        if ( c->visite == 0 && c->distance < dist_min ){
+          dist_min = c->distance ; 
+          sommet_dmin_nonvisite =  c ;
         }
-    }
+        c = c->sommet_suivant ; 
+      }
 
-    return min_distance_sommet;
-}
+      // Plus aucun sommet à visiter, on sort de la boucle
+      if ( sommet_dmin_nonvisite == NULL ){
+        break ;
+      }
 
-void dijkstra_test(pgraphe_t g, int r) {
-    // Initialiser les distances et les visites pour tous les sommets
-    for (psommet_t sommet = g; sommet != NULL; sommet = sommet->sommet_suivant) {
-        sommet->distance = INT_MAX;
-        sommet->visite = 0;
-    }
+      // Le sommet trouvé est désormais "visité"
+      sommet_dmin_nonvisite->visite = 1 ;
 
-    // Trouver le sommet de départ
-    psommet_t sommet_depart = NULL;
-    for (psommet_t sommet = g; sommet != NULL; sommet = sommet->sommet_suivant) {
-        if (sommet->label == r) {
-            sommet_depart = sommet;
-            break;
-        }
-    }
-    
-    if (sommet_depart == NULL) {
-        printf("Sommet de départ non trouvé.\n");
-        return;
-    }
+      // On met à jour les distances 
+      parc_t arc_courrant = sommet_dmin_nonvisite->liste_arcs ;
+      while ( arc_courrant != NULL ){
+        int d_tmp = sommet_dmin_nonvisite->distance + arc_courrant->poids ;
+        if ( d_tmp < arc_courrant->dest->distance ){
+          arc_courrant->dest->distance = d_tmp ;
+        } 
+        arc_courrant = arc_courrant->arc_suivant ;
+      }
 
-    sommet_depart->distance = 0;
-
-    // Dijkstra
-    for (psommet_t count = g; count != NULL; count = count->sommet_suivant) {
-        psommet_t u = minDistanceSommet_test(g);
-        if (u == NULL) break;
-
-        u->visite = 1;
-
-        // Mise à jour de la distance des sommets voisins du sommet choisi
-        for (parc_t arc = u->liste_arcs; arc != NULL; arc = arc->arc_suivant) {
-            psommet_t v = arc->dest;
-            if (v->visite == 0 && u->distance != INT_MAX && u->distance + arc->poids < v->distance) {
-                v->distance = u->distance + arc->poids;
-            }
-        }
-    }
-
-    // Affichage des résultats
-    printf("Sommet \t Distance depuis la source\n");
-    for (psommet_t sommet = g; sommet != NULL; sommet = sommet->sommet_suivant) {
-        printf("%d \t\t %d\n", sommet->label, sommet->distance);
     }
 }
 
 
 // #############################################
 // #############################################
+
+
+/**
+ * Vérifie si un chemin est élémentaire ou pas
+ * @param g
+ * @param c
+ * @return 1 si le chemin est élémentaire
+ *         0 sinon
+ */
+int elementaire ( pgraphe_t g , chemin_t c ){
+
+}
+
+
 
 
 // ======================================================================

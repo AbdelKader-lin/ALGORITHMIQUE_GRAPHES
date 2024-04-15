@@ -13,7 +13,7 @@ typedef struct s
   struct s   *sommet_suivant ; // sommet suivant dans le graphe
   int        couleur ; // couleur du sommet
 
-  // AJOUTÉ
+  // CHAMPS AJOUTÉS
   int visite ; // 1 si le sommet a déjà été visité, 0 sinon
   
   int distance ; // distance représente la distance du sommet principal
@@ -63,3 +63,5 @@ void afficher_graphe_profondeur (pgraphe_t g, int r) ;
 void afficher_graphe_largeur (pgraphe_t g, int r) ;
 
 void algo_dijkstra (pgraphe_t g, int r) ;
+
+int elementaire ( pgraphe_t g , chemin_t c ) ;
