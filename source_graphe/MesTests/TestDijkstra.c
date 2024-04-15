@@ -1,6 +1,58 @@
 #include "../graphe.h"  // Assurez-vous que ce fichier contient la définition de pgraphe_t et les prototypes nécessaires
 #include <stdio.h>
 #include <stdlib.h>
+#include "../abr.h" 
+
+
+pgraphe_t load_graph_from_file(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        fprintf(stderr, "Erreur : Impossible d'ouvrir le fichier %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    pgraphe_t graphe = NULL;
+    int label, distance, label_dest;
+    
+    while (!feof(file)) {
+        if (fscanf(file, "%d", &label) != 1) break;  // Lire le label du sommet
+
+        psommet_t sommet = chercher_sommet(graphe, label);
+        if (sommet == NULL) {  // Si le sommet n'existe pas, créez-le.
+            sommet = (psommet_t)malloc(sizeof(sommet_t));
+            if (!sommet) {
+                fprintf(stderr, "Erreur de mémoire\n");
+                exit(EXIT_FAILURE);
+            }
+            sommet->label = label;
+            sommet->liste_arcs = NULL;
+            sommet->sommet_suivant = graphe;  // Ajouter en tête de la liste
+            graphe = sommet;
+        }
+
+        // Lire les arcs
+        while (fscanf(file, "%d %d", &label_dest, &distance) == 2) {
+            psommet_t dest = chercher_sommet(graphe, label_dest);
+            if (dest == NULL) {  // Si le sommet de destination n'existe pas, créez-le.
+                dest = (psommet_t)malloc(sizeof(sommet_t));
+                if (!dest) {
+                    fprintf(stderr, "Erreur de mémoire\n");
+                    exit(EXIT_FAILURE);
+                }
+                dest->label = label_dest;
+                dest->liste_arcs = NULL;
+                dest->sommet_suivant = graphe;
+                graphe = dest;
+            }
+            // Ajouter un arc
+            ajouter_arc(sommet, dest, distance);
+        }
+    }
+
+    fclose(file);
+    return graphe;
+}
+
 
 // Fonction pour charger le graphe et exécuter Dijkstra
 void run_dijkstra_test(pgraphe_t graph, int source_vertex, int* expected_distances) {
@@ -12,11 +64,11 @@ void run_dijkstra_test(pgraphe_t graph, int source_vertex, int* expected_distanc
         int expected = expected_distances[current->label];
         if (current->distance != expected) {
             printf("Test Dijkstra échoué au sommet %d: attendu %d, obtenu %d\n", current->label, expected, current->distance);
-            return;
+            exit(EXIT_FAILURE);  // Quitter en cas d'échec du test
         }
         current = current->sommet_suivant;
     }
-    printf("Test Dijkstra réussi.\n");
+    printf("Test Dijkstra réussi pour le sommet source %d.\n", source_vertex);
 }
 
 // Test pour le graphe gr5
@@ -34,8 +86,9 @@ void test_dijkstra_gr6() {
 }
 
 int main() {
+    printf("Début des tests Dijkstra...\n");
     test_dijkstra_gr5();
     test_dijkstra_gr6();
-    printf("TESTS DIJKSTRA RÉUSSIS !\n");
-    return 0;
+    printf("Tous les tests Dijkstra ont réussi !\n");
+    return EXIT_SUCCESS;
 }

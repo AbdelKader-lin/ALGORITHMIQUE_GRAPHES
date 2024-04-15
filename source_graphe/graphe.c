@@ -433,7 +433,7 @@ void algo_dijkstra (pgraphe_t g, int r){
 int elementaire ( pgraphe_t graphe , pchemin_t chemin ){
 
   if ( chemin == NULL || chemin->sommet_courrant == NULL ){
-    // C'est un chemin vide, ou bien formé d'un seul somet
+    // C'est un chemin vide, ou bien formé d'un seul sommet
     return 1 ; 
   }
 
@@ -457,6 +457,173 @@ int elementaire ( pgraphe_t graphe , pchemin_t chemin ){
 }
 
 
+
+
+/*
+
+Un chemin simple est un chemin ne passant pas deux fois par le même arc, c’est à dire
+un chemin dont tous les arcs sont distincts.
+
+Décrivez en C l’implémentation de la fonction simple qui vérifie si un chemin est simple
+ou pas. La fonction simple renvoie 1 si le chemin c est simple, 0 sinon.
+
+*/
+int simple ( pgraphe_t g , pchemin_t chemin ) {
+  if ( chemin == NULL || chemin->sommet_courrant == NULL ){
+    // C'est un chemin vide, ou bien formé d'un seul 
+    return 1 ; 
+  }
+
+  // On initialise le champs visite à 0 pour tout les sommets et tous les arcs ;
+  pchemin_t pos_courante_1 = chemin ;
+  while ( pos_courante_1 != NULL ){
+    pos_courante_1 ->sommet_courrant ->visite = 0  ;
+    parc_t arc_c = pos_courante_1->sommet_courrant->liste_arcs ; 
+    while ( arc_c != NULL ){
+      arc_c->arc_visite = 0 ;
+      arc_c = arc_c->arc_suivant ;
+    }
+    pos_courante_1 = pos_courante_1->sommet_suivant ;
+  }
+
+  // On parcours les arcs du chemin
+  pchemin_t pos_courante = chemin ;
+  while ( pos_courante != NULL ){
+    if (  pos_courante->sommet_courrant->visite == 0 ){
+      parc_t arc_cour = pos_courante_1->sommet_courrant->liste_arcs ; 
+      while ( arc_cour != NULL ){
+        if ( arc_cour->arc_visite == 1 ){
+          return 0 ;
+        }
+        arc_cour->arc_visite = 1 ;
+        arc_cour = arc_cour->arc_suivant ; 
+      }
+    }
+    pos_courante = pos_courante->sommet_suivant ;
+  }
+  return 1 ; // Le chemin est elementaire 
+}
+
+
+/*
+Un chemin est dit Eulérien si tous les arcs du graphe sont utilisés dans le chemin.
+
+
+Décrivez en C l’implémentation de la fonction eulerien qui vérifie si un chemin est Eulérien ou pas.
+La fonction eulerien renvoie 1 si le chemin c est Eulérien, 0 sinon.
+
+*/
+
+int eulerien ( pgraphe_t g , pchemin_t chemin ) {
+  if ( chemin == NULL || chemin->sommet_courrant == NULL ){
+    // C'est un chemin vide, ou bien formé d'un seul 
+    return 1 ; 
+  }
+
+  // On initialise le champs visite à 0 pour tout les sommets et tous les arcs ;
+  pchemin_t pos_courante_1 = chemin ;
+  while ( pos_courante_1 != NULL ){
+    pos_courante_1 ->sommet_courrant ->visite = 0  ;
+    parc_t arc_c = pos_courante_1->sommet_courrant->liste_arcs ; 
+    while ( arc_c != NULL ){
+      arc_c->arc_visite = 0 ;
+      arc_c = arc_c->arc_suivant ;
+    }
+    pos_courante_1 = pos_courante_1->sommet_suivant ;
+  }
+
+  // On parcours les arcs du chemin
+  pchemin_t pos_courante = chemin ;
+  while ( pos_courante != NULL ){
+    if (  pos_courante->sommet_courrant->visite == 0 ){
+      pos_courante->sommet_courrant->visite = 1 ;
+      parc_t arc_cour = pos_courante_1->sommet_courrant->liste_arcs ; 
+      while ( arc_cour != NULL ){
+        if ( arc_cour->arc_visite == 0 ){
+          arc_cour->arc_visite = 1 ;
+        }
+        arc_cour = arc_cour->arc_suivant ; 
+      }
+    }
+    pos_courante = pos_courante->sommet_suivant ;
+  }
+
+  pgraphe_t pos_courante_2 = g ;
+  while ( pos_courante_2 != NULL ){
+    parc_t arc_c = pos_courante_2->liste_arcs ; 
+    while ( arc_c != NULL ){
+      if ( arc_c->arc_visite == 0 ){
+        return 0 ; // Il y a un arc qui n'est pas présent dans le chemin
+      }
+      arc_c = arc_c->arc_suivant ;
+    }
+    pos_courante_2 = pos_courante_2->sommet_suivant ;
+  }
+
+  return 1 ; 
+}
+
+
+/*
+Un chemin est dit Hamiltonien si tous les sommets du graphe sont utilisés dans le chemin.
+
+Décrivez en C l’implémentation de la fonction hamiltonien qui vérifie si un chemin est Hamiltonien ou pas. 
+
+La fonction hamiltonien renvoie 1 si le chemin c est Hamiltonien, 0sinon.
+
+*/
+
+int hamiltonien ( pgraphe_t g , pchemin_t chemin ){
+  if ( chemin == NULL || chemin->sommet_courrant == NULL ){
+    // C'est un chemin vide, ou bien formé d'un seul 
+    return 1 ; 
+  }
+
+  // On initialise le champs visite à 0 pour tout les sommets et tous les arcs ;
+  pchemin_t pos_courante_1 = chemin ;
+  while ( pos_courante_1 != NULL ){
+    pos_courante_1 ->sommet_courrant ->visite = 0  ;
+    parc_t arc_c = pos_courante_1->sommet_courrant->liste_arcs ; 
+    while ( arc_c != NULL ){
+      arc_c->arc_visite = 0 ;
+      arc_c = arc_c->arc_suivant ;
+    }
+    pos_courante_1 = pos_courante_1->sommet_suivant ;
+  }
+
+  // On parcours les sommets du chemin
+  pchemin_t pos_courante = chemin ;
+  while ( pos_courante != NULL ){
+    if (  pos_courante->sommet_courrant->visite == 0 ){
+      pos_courante->sommet_courrant->visite = 1 ;
+    }
+    pos_courante = pos_courante->sommet_suivant ;
+  }
+
+  pgraphe_t pos_courante_2 = g ;
+  while ( pos_courante_2 != NULL ){
+    if ( pos_courante_2->visite == 0 ){
+        return 0 ; // Il y a un sommets qui n'est pas présent dans le chemin
+      }
+    pos_courante_2 = pos_courante_2->sommet_suivant ;
+  }
+
+  return 1 ; 
+}
+
+/*
+
+Un graphe est dit Eulérien si il existe au moins un chemin qui soit Eulérien.
+
+
+Décrivez en C l’implémentation de la fonction graphe_eulerien qui vérifie si un graphe est Eulérien ou pas. 
+
+La fonction graphe_eulerien renvoie 1 si le graphe g est Eulérien, 0 sinon.
+
+*/
+int graphe_eulerien ( pgraphe_t g ){
+
+}
 
 
 // ======================================================================

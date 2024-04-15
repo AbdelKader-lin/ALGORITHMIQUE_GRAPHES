@@ -95,4 +95,3 @@ int empiler (ppile_t p, pnoeud_t pn)
  }
 
 }
-

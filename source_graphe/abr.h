@@ -1,4 +1,5 @@
-
+#ifndef ABR_H
+#define ABR_H
 /* structure noeud presentee en cours */
 
 typedef struct n {
@@ -9,7 +10,7 @@ typedef struct n {
 /* type Arbre, pointeur vers un noeud */
 
 typedef pnoeud_t Arbre_t;
-/*
+
 Arbre_t lire_arbre (char *nom_fichier) ;
 
 void afficher_arbre (Arbre_t a, int niveau) ;
@@ -47,5 +48,4 @@ Arbre_t detruire_cle_arbre (Arbre_t a, int cle) ;
 Arbre_t intersection_deux_arbres (Arbre_t a1, Arbre_t a2) ;
 
 Arbre_t union_deux_arbres (Arbre_t a1, Arbre_t a2) ;
-
-*/
+#endif // ABR_H
