@@ -622,8 +622,166 @@ La fonction graphe_eulerien renvoie 1 si le graphe g est Eulérien, 0 sinon.
 
 */
 int graphe_eulerien ( pgraphe_t g ){
+//
+}
+
+
+/*
+La longueur d’un chemin est la somme des poids des arcs.
+La distance entre deux sommets x et y est la longueur du plus court chemin entre x et y.
+*/
+
+/*
+Décrivez en C l’implémentation de la fonction distance qui calcule la distance entre deux
+sommets avec les labels x et y dans le graphe g.
+*/
+int distance ( pgraphe_t g , int x , int y ){
+  // On veut tout d'abord trouver les sommet avec le label x et y 
+  pgraphe_t sommet_X = NULL ;
+  pgraphe_t sommet_Y = NULL ;
+
+  psommet_t sommet_courrant = g ;
+  while ( sommet_courrant != NULL ){
+    // somme de label = x trouvé
+    if ( sommet_courrant->label == x ){
+      sommet_X = sommet_courrant ;
+    }
+    // somme de label = y trouvé
+    if ( sommet_courrant->label == y ){
+      sommet_Y = sommet_courrant ;
+    }
+    sommet_courrant = sommet_courrant->sommet_suivant ;
+  }
+
+  /*
+  typedef struct chemin {
+    psommet_t sommet_courrant ;
+    psommet_t sommet_suivant ;
+  } chemin_t , *pchemin_t ;
+  */
+
+  int distance = 0 ;  
+  pgraphe_t current_sommet = sommet_X ;
+  while ( sommet_X != NULL  && sommet_X != sommet_Y ){
+    if ( current_sommet->visite == 0 ){
+      current_sommet->visite = 1 ; // Le sommet est desormais visité
+
+      // On trouve l'arc avec le poids le plus petit
+      parc_t arc_courrant = current_sommet->liste_arcs ;
+      if ( arc_courrant == NULL ){
+        printf(" Sommet Y non trouvé !");
+        return -1 ; 
+      }
+      // On parcours les arcs sortant du sommet que l'on est en train de visiter
+      parc_t arc_poids_min = arc_courrant ; 
+      int d_min = INT_MAX ;
+      while ( arc_courrant != NULL ){
+        if ( arc_courrant->poids < d_min ) {
+          d_min = arc_courrant->poids ;
+          arc_poids_min = arc_courrant ; 
+        }
+        arc_courrant = arc_courrant->arc_suivant ; 
+      }
+      distance += d_min ;
+      current_sommet = arc_poids_min->dest ; 
+    } else{
+      current_sommet = current_sommet->sommet_suivant ; 
+    }
+
+  }
+  return distance ; 
+}
+    
+
+
+/*
+L’excentricité d’un sommet est sa distance maximale avec les autres sommets du graphe
+
+Le diamètre d’un graphe est l’excentricité maximale de ses sommets
+
+
+
+Décrivez en C l’implémentation de la fonction diametre qui calcule le diamètre du graphe g.
+*/
+int diametre ( pgraphe_t g ){
+  int diametre = INT_MIN ; 
+
+  psommet_t sommet_courrant = g ; 
+  // On calcule pour chaque sommet, sa distance max avec les autres sommets
+  while ( sommet_courrant != NULL ){
+    int mon_extrencite = excentricite( g , sommet_courrant->label ) ;
+    if ( mon_extrencite > diametre ){
+      diametre = mon_extrencite ; 
+    }
+    sommet_courrant = sommet_courrant->sommet_suivant ;
+  }
+  return diametre ;
 
 }
+
+
+int excentricite( pgraphe_t g , int n ) {
+  // On trouve d'abord le sommet dont le label = n 
+  psommet_t mon_sommet = chercher_sommet ( g, n ) ; 
+
+  psommet_t sommet_courrant = g ; 
+  int d_max = INT_MIN ; 
+  while ( sommet_courrant != NULL ){
+    int d = distance( g , sommet_courrant , mon_sommet ); 
+    if ( d > d_max ){
+      d_max = d ; 
+    }
+    sommet_courrant = sommet_courrant->sommet_suivant ; 
+  }
+  return d_max ; 
+}
+
+
+
+
+/*
+La fonction suivante renvoie le meilleur chemin entre le sommet de label x et le sommet de label y
+*/
+
+pchemin_t chemin ( pgraphe_t g , int x , int y ){
+
+  // On veut tout d'abord trouver les sommet avec le label x et y 
+  pgraphe_t sommet_X = chercher_sommet( g , x ) ;
+  pgraphe_t sommet_Y = chercher_sommet( g , y ) ;
+
+
+  // On va utiliser l'algo de Dijkstra pour determiner le meilleur chemin entre x et y 
+
+  // On determine la distance de chaque sommet de g par rapport au sommet de label X
+  algo_dijkstra( g , sommet_X->label ) ;
+
+  pchemin_t mon_chemin ; 
+  mon_chemin->sommet_courrant = sommet_X ;
+  mon_chemin->sommet_suivant = NULL ;
+
+  pchemin_t chemin_courr = mon_chemin ; 
+
+  psommet_t sommet_courrant_1 = g ; 
+  while ( sommet_courrant_1 != NULL ){
+    parc_t arc_courrant = sommet_courrant_1->liste_arcs ; 
+    psommet_t sommet_d_min = sommet_courrant_1 ; 
+    int dist_min = INT_MAX ;
+    while ( arc_courrant != NULL ){
+      if ( arc_courrant->dest->distance < dist_min ){
+        dist_min = arc_courrant->dest->distance ; 
+        sommet_d_min = sommet_courrant_1 ;
+      }
+      arc_courrant = arc_courrant->arc_suivant ;
+    }
+  chemin_courr->sommet_suivant = sommet_d_min ; 
+  sommet_courrant_1 = sommet_courrant_1->sommet_suivant ; 
+  }
+
+  return mon_chemin ; 
+}
+
+
+
 
 
 // ======================================================================
