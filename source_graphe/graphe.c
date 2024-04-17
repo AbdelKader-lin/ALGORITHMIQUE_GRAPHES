@@ -11,7 +11,6 @@
 
 #include "graphe.h"
 #include "file.h"
-#include "pile.h"
 
 #define Entier_max 2147483647 // 2^31 -1
 
@@ -176,101 +175,37 @@ int colorier_graphe (pgraphe_t g)
   return max_couleur ;
 }
 
-
-/*
-Les types utilisés :
--------------------------
-
-typedef struct a *parc_t ;
-
-
-un graphe est constitué d'une liste de sommets
-
-
-typedef struct s
-{
-  int        label ; 
-  parc_t     liste_arcs ; 
-  struct s   *sommet_suivant ; 
-  int        couleur ; 
-} sommet_t, *psommet_t ;
-
-
-Les arcs sortants d'un sommet sont chainés
-Pour chaque arc, il y a un poids qui peut par exemple correspondre a une distance
-
-
-typedef struct a {
-  
-                  int         poids ;
-                  psommet_t   dest ;  
-                  struct a *  arc_suivant ; 
-  
-} arc_t, *parc_t ;
-
-
-pgraphe_t: pointeur vers le premier sommet d'un graphe
-
-typedef psommet_t pgraphe_t ;
-*/
-
-
-
-
-// afficher les sommets du graphe avec un parcours en largeur
 void afficher_graphe_largeur(pgraphe_t g, int r) {
     
 
-    // 1- Verifier si le graphe est vide
+    // On vérifie si le graphe est vide 
     if ( g == NULL ){
       printf("Le graphe est vide, parcours impossible !");
       return ; 
     }
-    
-    // 2- On remet le champ visite à 0 pour tous les sommets du graphe 
-    pgraphe_t noeud_temp = g ; 
-    while ( noeud_temp != NULL ){
-      noeud_temp->visite = 0 ; 
-      noeud_temp = noeud_temp->sommet_suivant ;
-    }
 
+    pfile_t FilePrincipal = creer_file() ;
 
+    pnoeud_t noeud_init ;
+    psommet_t somme_depart = chercher_sommet( g, r ) ; 
 
-    // 3- Recherche du sommet de départ
-    pgraphe_t sommet_de_depart = g ; 
-    while ( sommet_de_depart->label != r ){
-      sommet_de_depart = sommet_de_depart->sommet_suivant ; 
-    }
-    if ( sommet_de_depart == NULL ){
-      printf("Sommet de départ non trouvé !\n");
-      return ;
-    }
+    int eval_enfiler_1 =  enfiler ( FilePrincipal , somme_depart ) ;
 
-
-    // 4- File pour les sommets à visiter
-    pfile_t file_de_parcours = creer_file() ;
-    pnoeud_t noeud_de_depart ;
-    noeud_de_depart->cle = sommet_de_depart ;  
-    int enfiler ( file_de_parcours, noeud_de_depart ) ;
-
-
-    // 5- Commencez le parcours du graphe par le sommet r
-    pgraphe_t courant = noeud_de_depart ; 
-    while ( !file_vide( file_de_parcours ) ){
-      courant = defiler( file_de_parcours ) ; 
-      if ( courant->visite == 0 ){
-        courant->visite = 1 ;
-        printf(" Sommet , couleur :  %i ; %i\n", courant->label , courant->couleur ) ;
-        parc_t arc = courant->liste_arcs ;
-        while ( arc != NULL ){
-          if ( arc->dest->visite == 0 ) {
-            enfiler( file_de_parcours , arc->dest );
+    while ( file_vide( FilePrincipal ) == 0 ){
+      psommet_t sommet_courrant = defiler( FilePrincipal ) ;
+      if ( sommet_courrant->visite == 0 ){
+        sommet_courrant->visite = 1;
+        printf("%i , ", sommet_courrant->label ) ; 
+        parc_t arc_courrant = sommet_courrant->liste_arcs ;
+        while ( arc_courrant != NULL ){
+          if ( arc_courrant->dest->visite == 0 ){
+            int eval_enfiler_2 =  enfiler ( FilePrincipal , arc_courrant->dest ) ;
           }
-          arc = arc->arc_suivant ; 
+          arc_courrant = arc_courrant->arc_suivant ;
         }
-
       }
     }
+
 
 }
 
@@ -279,79 +214,41 @@ void afficher_graphe_largeur(pgraphe_t g, int r) {
 
 
 // afficher les sommets du graphe avec un parcours en profondeur
-void afficher_graphe_profondeur (pgraphe_t g, int r){
+void afficher_graphe_profondeur(pgraphe_t g, int r){
   
-  // 1- Verifier si le graphe est vide
+  //  On vérifie si le graphe est vide
   if ( g == NULL ){
-    printf("Le graphe est vide, parcours impossible !");
     return ; 
   }
-    
-  // 2- On remet le champ visite à 0 pour tous les sommets du graphe 
-  pgraphe_t noeud_temp = g ; 
-  while ( noeud_temp != NULL ){
-    noeud_temp->visite = 0 ; 
-    noeud_temp = noeud_temp->sommet_suivant ;
+
+  // On affiche le label du sommet que l'on parcours 
+  printf("%i , ", g->label ) ; 
+
+
+
+  parc_t arc_courrant = g->liste_arcs ; 
+  while ( arc_courrant != NULL ) {
+    if ( arc_courrant->dest->visite == 0 ){
+      arc_courrant->dest->visite = 1 ; 
+      afficher_graphe_profondeur( arc_courrant->dest , arc_courrant->dest->label ) ; 
+    }
+    arc_courrant = arc_courrant->arc_suivant ; 
   }
-
-
-
-  // 3- Recherche du sommet de départ
-  pgraphe_t sommet_de_depart = g ; 
-  while ( sommet_de_depart->label != r ){
-    sommet_de_depart = sommet_de_depart->sommet_suivant ; 
-  }
-  if ( sommet_de_depart == NULL ){
-    printf("Sommet de départ non trouvé !\n");
-    return ;
-  }
-
-  // Appel de la fonction de parcours recursive avec le sommet 
-  // de départ en parametre
-  parcours_largeur_rec( sommet_de_depart ) ;
-
-}
-
-void parcours_largeur_rec( pgraphe_t sommet ){
-
-
-  // Création de la pile de parcours
-  ppile_t pile_de_parcours =  creer_pile () ;
-  empiler( pile_de_parcours , sommet ) ; 
-
-  // Parcours en profondeur 
-  while ( !pile_vide( pile_de_parcours ) ) {
-    psommet_t tmp = depiler( pile_de_parcours ) ;
-    if ( tmp->visite == 0 ){
-      tmp->visite = 1 ; 
-      printf(" Sommet , couleur :  %i ; %i\n", tmp->label , tmp->couleur ) ;
-      parc_t arc = tmp->liste_arcs ;
-      while ( arc != NULL ){
-        if ( arc->dest->visite == 0 ) {
-          empiler( pile_de_parcours , arc->dest );
-        }
-        arc = arc->arc_suivant ; 
-      }
-    } 
-  }
+  return ;
 }
 
 
-/*
-Algorithme de dijkstra. des
-variables ou des chanmps doivent 
-etre ajoutees dans les structures.
-*/
+
 void algo_dijkstra (pgraphe_t g, int r){
 
-  // 1- Verifier si le graphe est vide
+  // On verifier si le graphe est vide
   if ( g == NULL ){
     printf("Le graphe est vide, parcours impossible !");
     return ; 
   }
 
 
-    // 2- Initialiser les distances et les visites pour tous les sommets
+    // On initialiser les distances et les visites pour tous les sommets du graphe
     psommet_t sommet_actuel = g ;
     while ( sommet_actuel != NULL ){
       sommet_actuel->distance = INT_MAX;
@@ -359,64 +256,44 @@ void algo_dijkstra (pgraphe_t g, int r){
       sommet_actuel = sommet_actuel->sommet_suivant ; 
     }
 
-    // 3- On trouve le sommet de départ du graphe
-    psommet_t sommet_depart = NULL ;
-    psommet_t sommet_courant = NULL ;
+    // On cherche le sommet de départ : le sommet dont le label = r
+    psommet_t sommet_depart = chercher_sommet( g , r ) ;
+    // d du sommet de déepart à lui meme est 0
+    sommet_depart->distance = 0 ;  
+    sommet_depart->visite = 1 ; 
 
-    while ( sommet_courant != NULL ){
-      if ( sommet_courant ->label == r ){
-        sommet_depart = sommet_courant ;
-        break ;
-      }
-      sommet_courant = sommet_courant->sommet_suivant ; 
-    }
-    if ( sommet_depart == NULL ){
-      printf(" SOMMET DE DÉPART NON TROUVÉ ! \n");
-      return ;
-    } else {
-      // distance du sommet de départ à lui meme tjrs = 0
-      sommet_depart->distance = 0 ; 
-    }
+    // On entre dans la boucle principal 
+    while ( sommet_depart != NULL ){
+      // On a déja visité le sommet précedent
+      // On cherche donc le prochain sommet à visiter : sommet à d minimal
+      int d_min = INT_MAX ;
+      psommet_t sommet_d_min = NULL ; 
+      parc_t arc_courrant = sommet_depart->liste_arcs ; 
 
-
-
-    psommet_t courrant_sommet = sommet_depart ; 
-
-    // Boucle principale
-    while ( courrant_sommet != NULL ){
-
-      // On cherche le sommet visité avec la distance minimal du sommet
-      psommet_t sommet_dmin_nonvisite = NULL ; 
-      psommet_t c = courrant_sommet ; 
-      int dist_min =  INT_MAX ;
-      while ( c != NULL ){
-        if ( c->visite == 0 && c->distance < dist_min ){
-          dist_min = c->distance ; 
-          sommet_dmin_nonvisite =  c ;
+      // On parcours les sommets destinations des arcs sortant de sommet départ
+      while( arc_courrant != NULL ){
+        // On regarde si on peut faire mieux en terme de la distance du sommet destination
+        if ( sommet_depart->distance + arc_courrant->poids < arc_courrant->dest->distance ){
+          arc_courrant->dest->distance = sommet_depart->distance + arc_courrant->poids ;
         }
-        c = c->sommet_suivant ; 
-      }
 
-      // Plus aucun sommet à visiter, on sort de la boucle
-      if ( sommet_dmin_nonvisite == NULL ){
-        break ;
-      }
-
-      // Le sommet trouvé est désormais "visité"
-      sommet_dmin_nonvisite->visite = 1 ;
-
-      // On met à jour les distances 
-      parc_t arc_courrant = sommet_dmin_nonvisite->liste_arcs ;
-      while ( arc_courrant != NULL ){
-        int d_tmp = sommet_dmin_nonvisite->distance + arc_courrant->poids ;
-        if ( d_tmp < arc_courrant->dest->distance ){
-          arc_courrant->dest->distance = d_tmp ;
-        } 
+        // Si le sommet destination de cet arc n'a pas encore été visité
+        if ( arc_courrant->dest->visite == 0 ){
+          // Le sommet destination de cet arc est desormais visité
+          arc_courrant->dest->visite == 1 ;
+         
+          if ( arc_courrant->dest->distance < d_min ){
+            d_min = arc_courrant->dest->distance + arc_courrant->poids ;
+            sommet_d_min = arc_courrant->dest ; 
+          }
+ 
+        }
         arc_courrant = arc_courrant->arc_suivant ;
       }
-
+      sommet_depart = sommet_d_min ;
     }
 }
+
 
 
 // #############################################
@@ -517,7 +394,7 @@ La fonction eulerien renvoie 1 si le chemin c est Eulérien, 0 sinon.
 int eulerien ( pgraphe_t g , pchemin_t chemin ) {
   if ( chemin == NULL || chemin->sommet_courrant == NULL ){
     // C'est un chemin vide, ou bien formé d'un seul 
-    return 1 ; 
+    return 0 ; 
   }
 
   // On initialise le champs visite à 0 pour tout les sommets et tous les arcs ;
@@ -532,13 +409,16 @@ int eulerien ( pgraphe_t g , pchemin_t chemin ) {
     pos_courante_1 = pos_courante_1->sommet_suivant ;
   }
 
-  // On parcours les arcs du chemin
+  // On parcours les arcs du chemin pour les marquer
   pchemin_t pos_courante = chemin ;
   while ( pos_courante != NULL ){
     if (  pos_courante->sommet_courrant->visite == 0 ){
       pos_courante->sommet_courrant->visite = 1 ;
+
+      // On parcours la liste des arcs sortant de pos_courante->sommet_courrant
       parc_t arc_cour = pos_courante_1->sommet_courrant->liste_arcs ; 
       while ( arc_cour != NULL ){
+        // Arc non visité
         if ( arc_cour->arc_visite == 0 ){
           arc_cour->arc_visite = 1 ;
         }
@@ -548,6 +428,8 @@ int eulerien ( pgraphe_t g , pchemin_t chemin ) {
     pos_courante = pos_courante->sommet_suivant ;
   }
 
+  // Maintenant on parcours tous les arcs du graphe,
+  // Si un de ces arcs n'est pas visité, c'est qu'il n'est pas dans le chemin
   pgraphe_t pos_courante_2 = g ;
   while ( pos_courante_2 != NULL ){
     parc_t arc_c = pos_courante_2->liste_arcs ; 
@@ -603,12 +485,39 @@ int hamiltonien ( pgraphe_t g , pchemin_t chemin ){
   pgraphe_t pos_courante_2 = g ;
   while ( pos_courante_2 != NULL ){
     if ( pos_courante_2->visite == 0 ){
-        return 0 ; // Il y a un sommets qui n'est pas présent dans le chemin
+        return 0 ; // Il y a un sommet qui n'est pas présent dans le chemin
       }
     pos_courante_2 = pos_courante_2->sommet_suivant ;
   }
 
   return 1 ; 
+}
+
+
+/* 
+Décrivez en C l’implémentation de la fonction graphe_hamiltonien qui vérifie si un graphe
+est Hamiltonien ou pas. La fonction graphe_hamiltonien renvoie 1 si le graphe g est Ha-
+miltonien, 0 sinon.
+*/
+int graphe_hamiltonien ( pgraphe_t g ){ 
+  psommet_t sommet_courrant_1 = g ;
+  while ( sommet_courrant_1 != NULL ){
+    // On parcours de nouveau tout les sommets et on genere un chemin entre sommet_courrant_1 et chacun de ces sommets
+    psommet_t sommet_courrant_2 = g ; 
+    while ( sommet_courrant_2 != NULL ){
+      pchemin_t MonChemin = chemin( g , sommet_courrant_1 , sommet_courrant_2 );
+      // Je vérifie si le chemin genere est hamiltonien ou pas
+      int eval_chemin = hamiltonien( g , MonChemin ) ;
+      //  Si le chemin genere est hamiltonien, on renvoie 1
+      if ( eval_chemin == 1 ){
+        return 1 ; 
+      }
+      sommet_courrant_2 = sommet_courrant_2->sommet_suivant ;
+    }
+    sommet_courrant_1 = sommet_courrant_1->sommet_suivant ; 
+  }
+  // Aucun chemin n'est pas hamiltonien
+  return 0 ;
 }
 
 /*
@@ -622,7 +531,24 @@ La fonction graphe_eulerien renvoie 1 si le graphe g est Eulérien, 0 sinon.
 
 */
 int graphe_eulerien ( pgraphe_t g ){
-//
+  psommet_t sommet_courrant_1 = g ;
+  while ( sommet_courrant_1 != NULL ){
+    // On parcours de nouveau tout les sommets et on genere un chemin entre sommet_courrant_1 et chacun de ces sommets
+    psommet_t sommet_courrant_2 = g ; 
+    while ( sommet_courrant_2 != NULL ){
+      pchemin_t MonChemin = chemin( g , sommet_courrant_1 , sommet_courrant_2 );
+      // Je vérifie si le chemin genere est eulerien ou pas
+      int eval_chemin = eulerien( g , MonChemin ) ;
+      //  Si le chemin genere est eulerien, on renvoie 1
+      if ( eval_chemin == 1 ){
+        return 1 ; 
+      }
+      sommet_courrant_2 = sommet_courrant_2->sommet_suivant ;
+    }
+    sommet_courrant_1 = sommet_courrant_1->sommet_suivant ; 
+  }
+  // Aucun chemin n'est pas eulerien
+  return 0 ;
 }
 
 
@@ -637,21 +563,8 @@ sommets avec les labels x et y dans le graphe g.
 */
 int distance ( pgraphe_t g , int x , int y ){
   // On veut tout d'abord trouver les sommet avec le label x et y 
-  pgraphe_t sommet_X = NULL ;
-  pgraphe_t sommet_Y = NULL ;
-
-  psommet_t sommet_courrant = g ;
-  while ( sommet_courrant != NULL ){
-    // somme de label = x trouvé
-    if ( sommet_courrant->label == x ){
-      sommet_X = sommet_courrant ;
-    }
-    // somme de label = y trouvé
-    if ( sommet_courrant->label == y ){
-      sommet_Y = sommet_courrant ;
-    }
-    sommet_courrant = sommet_courrant->sommet_suivant ;
-  }
+  pgraphe_t sommet_X = chercher_sommet( g , x ) ;
+  pgraphe_t sommet_Y = chercher_sommet( g , y ) ;
 
   /*
   typedef struct chemin {
