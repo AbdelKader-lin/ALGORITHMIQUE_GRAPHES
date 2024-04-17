@@ -69,18 +69,38 @@ void ecrire_graphe_colorie (psommet_t p) ;
 
 int colorier_graphe (pgraphe_t g) ;
 
+
 void afficher_graphe_profondeur (pgraphe_t g, int r) ;
+
 
 void afficher_graphe_largeur (pgraphe_t g, int r) ;
 
+
 void algo_dijkstra (pgraphe_t g, int r) ;
+
 
 int elementaire ( pgraphe_t g , pchemin_t c ) ;
 
+
 int simple ( pgraphe_t g , pchemin_t c )  ;
+
 
 int eulerien ( pgraphe_t g , pchemin_t c ) ; 
 
+
 int hamiltonien ( pgraphe_t g , pchemin_t chemin ) ;
 
+
 int graphe_eulerien ( pgraphe_t g ) ; 
+
+
+int distance ( pgraphe_t g , int x , int y ) ; 
+
+
+int excentricite ( pgraphe_t g , int n ) ; 
+
+
+int diametre ( pgraphe_t g );
+
+
+pchemin_t chemin ( pgraphe_t g , int x , int y );
