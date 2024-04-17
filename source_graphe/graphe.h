@@ -91,16 +91,19 @@ int eulerien ( pgraphe_t g , pchemin_t c ) ;
 int hamiltonien ( pgraphe_t g , pchemin_t chemin ) ;
 
 
+int graphe_hamiltonien ( pgraphe_t g );
+
+
 int graphe_eulerien ( pgraphe_t g ) ; 
 
 
 int distance ( pgraphe_t g , int x , int y ) ; 
 
 
-int excentricite ( pgraphe_t g , int n ) ; 
-
-
 int diametre ( pgraphe_t g );
+
+
+int excentricite ( pgraphe_t g , int n ) ; 
 
 
 pchemin_t chemin ( pgraphe_t g , int x , int y );
